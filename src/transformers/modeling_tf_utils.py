@@ -804,7 +804,7 @@ def load_tf_shard(model, model_layer_map, resolved_archive_file, ignore_mismatch
     unexpected_keys = set()
     # Read the H5 file
     try:
-        with h5py.File(resolved_archive_file, "r") as sharded_checkpoint_file:
+        with h5py.File(resolved_archive_file, "r", locking=False) as sharded_checkpoint_file:
             # Retrieve the name of each layer from the H5 file
             saved_h5_model_layers_name = set(load_attributes_from_hdf5_group(sharded_checkpoint_file, "layer_names"))
             weight_value_tuples = []
@@ -958,7 +958,7 @@ def load_tf_weights_from_h5(model, resolved_archive_file, ignore_mismatched_size
     mismatched_layers = []
 
     # Read the H5 file
-    with h5py.File(resolved_archive_file, "r") as sharded_checkpoint_file:
+    with h5py.File(resolved_archive_file, "r", locking=False) as sharded_checkpoint_file:
         # Retrieve the name of each layer from the H5 file
         saved_h5_model_layers_name = set(load_attributes_from_hdf5_group(sharded_checkpoint_file, "layer_names"))
 
@@ -2515,7 +2515,7 @@ class TFPreTrainedModel(keras.Model, TFModelUtilsMixin, TFGenerationMixin, PushT
                         shard_state_dict, os.path.join(save_directory, shard_file), metadata={"format": "tf"}
                     )
                 else:
-                    with h5py.File(os.path.join(save_directory, shard_file), mode="w") as shard_file:
+                    with h5py.File(os.path.join(save_directory, shard_file), mode="w", locking=False) as shard_file:
                         layers = []
                         for layer in sorted(shard, key=lambda x: x.name):
                             if "model." in layer.name or len(layer.name.split("/")) == 1:
